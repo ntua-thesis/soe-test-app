@@ -1,0 +1,83 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "chart.fullname" . }}-gateway
+spec:
+  gatewayClassName: istio
+  listeners:
+  - name: http
+    port: 8080
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: Same
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    gateway.istio.io/managed: istio.io-gateway-controller
+    gateway.networking.k8s.io/gateway-name: {{ include "chart.fullname" . }}-gateway
+    istio.io/dataplane-mode: none
+  name: {{ include "chart.fullname" . }}-gateway-metrics
+spec:
+  selector:
+    gateway.networking.k8s.io/gateway-name: {{ include "chart.fullname" . }}-gateway
+  ports:
+  - appProtocol: tcp
+    name: metrics
+    port: 15020
+    protocol: TCP
+    targetPort: 15020
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "chart.fullname" . }}-istio-gateway-monitor
+spec:
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: {{ include "chart.fullname" . }}-gateway
+  endpoints:
+  - port: metrics  # Custom port definition (see below)
+    path: /stats/prometheus
+    interval: 5s
+    honorLabels: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "chart.fullname" . }}-httproute
+spec:
+  parentRefs:
+  - name: {{ include "chart.fullname" . }}-gateway
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: {{ include "chart.fullname" . }}
+      port: 8080
+      weight: 100
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    gateway.networking.k8s.io/gateway-name: {{ include "chart.fullname" . }}-gateway
+    istio.io/dataplane-mode: none
+  name: {{ include "chart.fullname" . }}-gateway-nodeport
+spec:
+  type: NodePort
+  selector:
+    gateway.networking.k8s.io/gateway-name: {{ include "chart.fullname" . }}-gateway
+  ports:
+  - appProtocol: http
+    name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+    {{- with .Values.nodePort }}
+    nodePort: {{ . }}
+    {{- end }}
