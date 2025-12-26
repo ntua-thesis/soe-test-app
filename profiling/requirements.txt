@@ -1,0 +1,4 @@
+aiohttp
+requests
+numpy
+pandas
