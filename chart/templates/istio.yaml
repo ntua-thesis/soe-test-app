@@ -34,6 +34,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "chart.fullname" . }}-istio-gateway-monitor
+  labels:
+    release: monitoring 
 spec:
   selector:
     matchLabels:
