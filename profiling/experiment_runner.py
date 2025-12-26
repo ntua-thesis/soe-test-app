@@ -14,7 +14,7 @@ from datetime import datetime
 HELM_RELEASE_NAME = "soe-test-app" 
 HELM_CHART_PATH = "/chart" 
 NAMESPACE = "test"
-APP_URL = "http://30200.lefto.org/primes?n=1000000"
+APP_URL = "http://30200.lefto.org/primes?n=500000"
 PROMETHEUS_URL = "https://prometheus.lefto.org"
 RESULTS_DIR = "./results"
 
@@ -25,9 +25,35 @@ SUCCESS_THRESHOLD = 0.95 # Stop if success rate < 95%
 
 # Resource Configurations
 RESOURCE_CONFIGS = [
-    {"cpu": "200m", "memory": "128Mi", "min_rps": 1, "max_rps": 10, "step_rps": 1},
-    {"cpu": "500m", "memory": "256Mi", "min_rps": 5, "max_rps": 20, "step_rps": 2},
-    {"cpu": "1000m", "memory": "512Mi", "min_rps": 10, "max_rps": 40, "step_rps": 5}
+    # --- Low Range (100m - 200m) ---
+    {"cpu": "100m", "memory": "64Mi",  "min_rps": 1,  "max_rps": 5,  "step_rps": 1},
+    {"cpu": "100m", "memory": "128Mi", "min_rps": 1,  "max_rps": 8,  "step_rps": 1},
+    {"cpu": "200m", "memory": "128Mi", "min_rps": 2,  "max_rps": 12, "step_rps": 1},
+    {"cpu": "200m", "memory": "256Mi", "min_rps": 2,  "max_rps": 15, "step_rps": 2},
+
+    # --- Mid-Low Range (300m - 400m) ---
+    {"cpu": "300m", "memory": "128Mi", "min_rps": 3,  "max_rps": 18, "step_rps": 2},
+    {"cpu": "300m", "memory": "256Mi", "min_rps": 4,  "max_rps": 22, "step_rps": 2},
+    {"cpu": "300m", "memory": "512Mi", "min_rps": 4,  "max_rps": 25, "step_rps": 2},
+    
+    {"cpu": "400m", "memory": "256Mi", "min_rps": 5,  "max_rps": 28, "step_rps": 3},
+    {"cpu": "400m", "memory": "512Mi", "min_rps": 6,  "max_rps": 32, "step_rps": 3},
+
+    # --- Mid Range (500m - 600m) ---
+    {"cpu": "500m", "memory": "256Mi", "min_rps": 8,  "max_rps": 35, "step_rps": 4},
+    {"cpu": "500m", "memory": "512Mi", "min_rps": 8,  "max_rps": 40, "step_rps": 4},
+    {"cpu": "500m", "memory": "1Gi",   "min_rps": 10, "max_rps": 45, "step_rps": 5},
+
+    {"cpu": "600m", "memory": "512Mi", "min_rps": 10, "max_rps": 48, "step_rps": 5},
+    {"cpu": "600m", "memory": "1Gi",   "min_rps": 12, "max_rps": 55, "step_rps": 5},
+
+    # --- Mid-High Range (700m - 800m) ---
+    {"cpu": "700m", "memory": "512Mi", "min_rps": 14, "max_rps": 60, "step_rps": 6},
+    {"cpu": "700m", "memory": "1Gi",   "min_rps": 15, "max_rps": 65, "step_rps": 6},
+
+    {"cpu": "800m", "memory": "512Mi", "min_rps": 16, "max_rps": 70, "step_rps": 8},
+    {"cpu": "800m", "memory": "1Gi",   "min_rps": 18, "max_rps": 75, "step_rps": 8},
+    {"cpu": "800m", "memory": "2Gi",   "min_rps": 20, "max_rps": 80, "step_rps": 10}
 ]
 
 # Prometheus Queries to Export (Key = Filename, Value = PromQL)
