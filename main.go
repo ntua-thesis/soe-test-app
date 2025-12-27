@@ -12,7 +12,7 @@ func sieveOfEratosthenes(n int) []int {
     // 1. ALLOCATE MEMORY (RAM Scaling)
     // We use an int array instead of bool to consume more RAM per request
     // An int is usually 8 bytes on 64-bit systems.
-    integers := make([]int, n+1) 
+    integers := make([]int8, n+1) 
     
     var primes []int
 

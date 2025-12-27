@@ -12,52 +12,64 @@ from datetime import datetime
 # ================= CONFIGURATION =================
 # Kubernetes / Helm Details
 HELM_RELEASE_NAME = "soe-test-app" 
-HELM_CHART_PATH = "/chart" 
+HELM_CHART_PATH = "/chart"
+DEPLOYMENT = "soe-test-app-chart" 
 NAMESPACE = "test"
-APP_URL = "http://30200.lefto.org/primes?n=500000"
+APP_URL = "http://30200.lefto.org/primes?n=600000"
 PROMETHEUS_URL = "https://prometheus.lefto.org"
 RESULTS_DIR = "./results"
 
 # Experiment Settings
-DURATION_PER_STEP = 10  # 5 minutes in seconds
+DURATION_PER_STEP = 300  # 5 minutes in seconds
 REQUEST_TIMEOUT = 10     # Seconds
 SUCCESS_THRESHOLD = 0.95 # Stop if success rate < 95%
 
 # Resource Configurations
 RESOURCE_CONFIGS = [
     # --- Low Range (100m - 200m) ---
-    {"cpu": "100m", "memory": "64Mi",  "min_rps": 1,  "max_rps": 5,  "step_rps": 1},
-    {"cpu": "100m", "memory": "128Mi", "min_rps": 1,  "max_rps": 8,  "step_rps": 1},
-    {"cpu": "200m", "memory": "128Mi", "min_rps": 2,  "max_rps": 12, "step_rps": 1},
-    {"cpu": "200m", "memory": "256Mi", "min_rps": 2,  "max_rps": 15, "step_rps": 2},
+    {"cpu": "100m", "memory": "64Mi",  "min_rps": 1,  "max_rps": 20,  "step_rps": 1},
+    {"cpu": "100m", "memory": "128Mi", "min_rps": 1,  "max_rps": 20,  "step_rps": 1},
+    {"cpu": "100m", "memory": "256Mi", "min_rps": 1,  "max_rps": 20,  "step_rps": 1},
+
+    {"cpu": "200m", "memory": "64Mi",  "min_rps": 5,  "max_rps": 25, "step_rps": 1},
+    {"cpu": "200m", "memory": "128Mi", "min_rps": 5,  "max_rps": 25, "step_rps": 1},
+    {"cpu": "200m", "memory": "256Mi", "min_rps": 5,  "max_rps": 25, "step_rps": 1},
+    {"cpu": "200m", "memory": "384Mi", "min_rps": 5,  "max_rps": 25, "step_rps": 1},
 
     # --- Mid-Low Range (300m - 400m) ---
-    {"cpu": "300m", "memory": "128Mi", "min_rps": 3,  "max_rps": 18, "step_rps": 2},
-    {"cpu": "300m", "memory": "256Mi", "min_rps": 4,  "max_rps": 22, "step_rps": 2},
-    {"cpu": "300m", "memory": "512Mi", "min_rps": 4,  "max_rps": 25, "step_rps": 2},
+    {"cpu": "300m", "memory": "128Mi", "min_rps": 10,  "max_rps": 30, "step_rps": 1},
+    {"cpu": "300m", "memory": "256Mi", "min_rps": 10,  "max_rps": 30, "step_rps": 1},
+    {"cpu": "300m", "memory": "384Mi", "min_rps": 10,  "max_rps": 30, "step_rps": 1},
+    {"cpu": "300m", "memory": "512Mi", "min_rps": 10,  "max_rps": 30, "step_rps": 1},
     
-    {"cpu": "400m", "memory": "256Mi", "min_rps": 5,  "max_rps": 28, "step_rps": 3},
-    {"cpu": "400m", "memory": "512Mi", "min_rps": 6,  "max_rps": 32, "step_rps": 3},
+    {"cpu": "400m", "memory": "256Mi", "min_rps": 15,  "max_rps": 35, "step_rps": 1},
+    {"cpu": "400m", "memory": "384Mi", "min_rps": 15,  "max_rps": 35, "step_rps": 1},
+    {"cpu": "400m", "memory": "512Mi", "min_rps": 15,  "max_rps": 35, "step_rps": 1},
+    {"cpu": "400m", "memory": "768Mi", "min_rps": 15,  "max_rps": 35, "step_rps": 1},
 
     # --- Mid Range (500m - 600m) ---
-    {"cpu": "500m", "memory": "256Mi", "min_rps": 8,  "max_rps": 35, "step_rps": 4},
-    {"cpu": "500m", "memory": "512Mi", "min_rps": 8,  "max_rps": 40, "step_rps": 4},
-    {"cpu": "500m", "memory": "1Gi",   "min_rps": 10, "max_rps": 45, "step_rps": 5},
+    {"cpu": "500m", "memory": "384Mi", "min_rps": 15,  "max_rps": 40, "step_rps": 1},
+    {"cpu": "500m", "memory": "512Mi", "min_rps": 15,  "max_rps": 40, "step_rps": 1},
+    {"cpu": "500m", "memory": "768Mi", "min_rps": 15,  "max_rps": 40, "step_rps": 1},
 
-    {"cpu": "600m", "memory": "512Mi", "min_rps": 10, "max_rps": 48, "step_rps": 5},
-    {"cpu": "600m", "memory": "1Gi",   "min_rps": 12, "max_rps": 55, "step_rps": 5},
+    {"cpu": "600m", "memory": "384Mi", "min_rps": 15, "max_rps": 50, "step_rps": 2},
+    {"cpu": "600m", "memory": "512Mi", "min_rps": 15, "max_rps": 50, "step_rps": 2},
+    {"cpu": "600m", "memory": "768Mi", "min_rps": 15, "max_rps": 50, "step_rps": 2},
 
     # --- Mid-High Range (700m - 800m) ---
-    {"cpu": "700m", "memory": "512Mi", "min_rps": 14, "max_rps": 60, "step_rps": 6},
-    {"cpu": "700m", "memory": "1Gi",   "min_rps": 15, "max_rps": 65, "step_rps": 6},
+    {"cpu": "700m", "memory": "512Mi", "min_rps": 15, "max_rps": 60, "step_rps": 2},
+    {"cpu": "700m", "memory": "768Mi", "min_rps": 15, "max_rps": 60, "step_rps": 2},
+    {"cpu": "700m", "memory": "896Mi", "min_rps": 15, "max_rps": 60, "step_rps": 2},
 
-    {"cpu": "800m", "memory": "512Mi", "min_rps": 16, "max_rps": 70, "step_rps": 8},
-    {"cpu": "800m", "memory": "1Gi",   "min_rps": 18, "max_rps": 75, "step_rps": 8},
-    {"cpu": "800m", "memory": "2Gi",   "min_rps": 20, "max_rps": 80, "step_rps": 10}
+    {"cpu": "800m", "memory": "768Mi", "min_rps": 20, "max_rps": 70, "step_rps": 2},
+    {"cpu": "800m", "memory": "896Mi", "min_rps": 20, "max_rps": 70, "step_rps": 2},
+    {"cpu": "800m", "memory": "1Gi",   "min_rps": 20, "max_rps": 70, "step_rps": 2},
+
+    {"cpu": "900m", "memory": "896Mi", "min_rps": 25, "max_rps": 80, "step_rps": 2},
+    {"cpu": "900m", "memory": "1Gi",   "min_rps": 25, "max_rps": 80, "step_rps": 2},
 ]
 
 # Prometheus Queries to Export (Key = Filename, Value = PromQL)
-# Note: $POD_REGEX will be replaced by the script
 PROMETHEUS_QUERIES = {
     "request_rate_for_30s": 'sum by (pod) (sum by (pod, status) ( sum(rate(istio_requests_total{destination_canonical_service="chart"} [30s]))))',
     "cpu_per_limit_for_60s": 'sum(rate(container_cpu_usage_seconds_total{pod=~"soe-test-app-chart-.*"}[1m])) / sum(kube_pod_container_resource_limits{resource="cpu", container="chart"}) * 100',
@@ -65,7 +77,8 @@ PROMETHEUS_QUERIES = {
     "cpu_throttling_60s": 'avg(rate(container_cpu_cfs_throttled_periods_total{pod=~"soe-test-app.*"} [60s]))',
     "memory_per_limit": 'sum(container_memory_working_set_bytes{pod=~"soe-test-app-.*"}) / sum(kube_pod_container_resource_limits{resource="memory", container="chart"}) * 100',
     "latency_p99": 'histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service="chart"}[30s])) by (le))',
-    "latency_p95": 'histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service="chart"}[30s])) by (le))'
+    "latency_p95": 'histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service="chart"}[30s])) by (le))',
+    "restarts": 'kube_pod_container_status_restarts_total{container="chart"}',
 }
 # =================================================
 
@@ -88,10 +101,30 @@ def run_helm_update(cpu, memory):
     try:
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
         print("✅ Deployment updated and ready.")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Helm update failed: {e}")
+        sys.exit(1)
+
+def run_restart_deployment():
+    """Restart the deployment with via kubeclt"""
+    print(f"--- ⟳ Restarting Deployment ---")
+    cmd_restart = [
+        "kubectl", "rollout", "restart", 
+        "deployment", DEPLOYMENT,
+        "--namespace", NAMESPACE
+    ]
+    cmd_status = [
+        "kubectl", "rollout", "status", "deployment",
+        "--namespace", NAMESPACE
+    ]
+    try:
+        subprocess.run(cmd_restart, check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(cmd_status, check=True, stdout=subprocess.DEVNULL)
+        print("✅ Deployment restarted and ready.")
         # Give it a small buffer to stabilize
         time.sleep(10)
     except subprocess.CalledProcessError as e:
-        print(f"❌ Helm update failed: {e}")
+        print(f"❌ Rollout restart failed: {e}")
         sys.exit(1)
 
 async def send_request(session, url):
@@ -138,7 +171,6 @@ async def run_load_test(rps, duration):
 
 def export_prometheus_data(output_dir, start_ts, end_ts):
     """Queries Prometheus for a range of data and saves CSVs."""
-    pod_regex = f"{HELM_RELEASE_NAME}.*"
     
     # Add a small buffer to start/end times to capture edge data
     start_str = datetime.fromtimestamp(start_ts).isoformat() + "Z"
@@ -147,10 +179,8 @@ def export_prometheus_data(output_dir, start_ts, end_ts):
     step = "5s" # Resolution of data points
 
     for name, query in PROMETHEUS_QUERIES.items():
-        final_query = query.replace("$POD_REGEX", pod_regex)
-        
         params = {
-            'query': final_query,
+            'query': query,
             'start': start_str,
             'end': end_str,
             'step': step
@@ -194,6 +224,9 @@ async def main():
         
         current_rps = config["min_rps"]
         while current_rps <= config["max_rps"]:
+
+            # Restart deployment to get clear restarts metric
+            run_restart_deployment()
             
             # Create RPS Directory (e.g., results/200m_128Mi/10rps)
             rps_path = os.path.join(config_path, f"{current_rps}rps")

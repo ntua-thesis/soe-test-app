@@ -3,7 +3,9 @@
 run the app:
 
 ```
-docker build -t load-test-runner:0.0.1 .
+docker build -t load-test-runner:0.0.2 .
+docker tag load-test-runner:0.0.2 nexus.lefto.org/docker/load-test-runner:0.0.2
+docker push nexus.lefto.org/docker/load-test-runner:0.0.2
 ```
 
 ```
@@ -13,5 +15,27 @@ docker run --rm \
   -v $(pwd)/results:/app/results \
   -v $(pwd)/experiment_runner.py:/app/experiment_runner.py \
   -v $(pwd)/../chart:/chart \
-  load-test-runner:0.0.1
+  load-test-runner:0.0.2
+```
+
+```
+docker run --rm -it \
+  --network host \
+  -v ~/.kube/config:/root/.kube/config \
+  -v $(pwd)/continuous_load.py:/app/continuous_load.py \
+  -v $(pwd)/../chart:/chart \
+  load-test-runner:0.0.2 \
+  python -u continuous_load.py
+```
+
+```
+docker run -d --rm \
+  --name my-load-test \
+  --network host \
+  -v ~/.kube/config:/root/.kube/config \
+  -v "$(pwd)/results:/app/results" \
+  -v "$(pwd)/experiment_runner.py:/app/experiment_runner.py" \
+  -v "$(pwd)/../chart:/chart" \
+  nexus.lefto.org/docker/load-test-runner:0.0.2 > container_id.txt && \
+docker logs -f $(cat container_id.txt) > log.txt 2>&1 &
 ```
