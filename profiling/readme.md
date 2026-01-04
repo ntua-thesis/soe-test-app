@@ -15,7 +15,8 @@ docker run --rm \
   -v $(pwd)/results:/app/results \
   -v $(pwd)/experiment_runner.py:/app/experiment_runner.py \
   -v $(pwd)/../chart:/chart \
-  load-test-runner:0.0.2
+  load-test-runner:0.0.2 \
+  python -u experiment_runner.py
 ```
 
 ```
