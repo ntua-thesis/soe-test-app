@@ -19,6 +19,7 @@ TARGET_MEMORY = "768Mi"
 APP_URL = "http://30200.lefto.org/primes?n=600000"
 TARGET_RPS = 25          # Requests per second
 REQUEST_TIMEOUT = 10     # Seconds
+IMAGE_TAG= "0.0.1-64bit"
 # =================================================
 
 # Global counters for live reporting
@@ -39,6 +40,7 @@ def run_helm_update(cpu, memory):
         "--set", f"resources.limits.memory={memory}",
         "--set", f"resources.requests.cpu={cpu}",
         "--set", f"resources.requests.memory={memory}",
+        "--set", f"image.tag={IMAGE_TAG}",
         "--wait" # Wait for pods to be ready
     ]
     try:

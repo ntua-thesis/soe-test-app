@@ -40,3 +40,15 @@ docker run -d --rm \
   nexus.lefto.org/docker/load-test-runner:0.0.2 > container_id.txt && \
 docker logs -f $(cat container_id.txt) > log.txt 2>&1 &
 ```
+
+```
+docker run --rm -it \
+  --name simulation \
+  --network host \
+  -v ~/.kube/config:/root/.kube/config \
+  -v "$(pwd)/outputs_simulation:/app/outputs_simulation" \
+  -v "$(pwd)/simulate.py:/app/simulate.py" \
+  -v "/path/to/timestamps.txt:/app/timestamps.txt" \
+  nexus.lefto.org/docker/load-test-runner:0.0.2 \
+  python -u simulate.py
+```
