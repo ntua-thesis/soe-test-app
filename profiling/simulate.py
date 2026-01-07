@@ -257,7 +257,7 @@ def simulate_requests_from_timestamps(input_timestamps_file, simulation_duration
             print(f"  No data returned for '{metric_name}'.")
 
     print(f"\nRunning kubectl logs command for pod: {pod_name}")
-    log_command = f"kubectl logs -l name={pod_name} -n ahp-app > outputs_simulation/recommender.log"
+    log_command = f"kubectl logs -l name={pod_name} -n ahp-app --tail=-1 > outputs_simulation/recommender.log"
     try:
         os.system(log_command)
         print(f"Logs saved to recommender.log")
