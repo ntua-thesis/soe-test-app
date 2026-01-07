@@ -12,7 +12,7 @@ requests.packages.urllib3.disable_warnings()
 # ================= CONFIGURATION =================
 
 INPUT_TIMESTAMPS_FILE = 'timestamps.txt'
-SIMULATION_DURATION_SECONDS = 60 # 5.2 * 60 * 60
+SIMULATION_DURATION_SECONDS = 5.2 * 60 * 60
 INTERVAL = 1
 RECOMMENDER_POD_NAME_LABEL = "ahp-soe-app-recommender"
 REQUEST_TIMEOUT = 10     # Seconds
@@ -157,10 +157,10 @@ def simulate_requests_from_timestamps(input_timestamps_file, simulation_duration
 
     # Define Prometheus queries
     query_list = [
-        {"name": "average_response_time", "query": 'avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{destination_canonical_service=~"ahp-soe-app-.*"} [10s])) / sum by (pod) (rate(istio_request_duration_milliseconds_count{destination_canonical_service=~"ahp-soe-app-.*"} [10s])))'},
-        {"name": "latency_p99", "query": 'histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service=~"ahp-soe-app-.*"}[30s])) by (le))'},
-        {"name": "latency_p95", "query": 'histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service=~"ahp-soe-app-.*"}[30s])) by (le))'},
-        {"name": "request_rate_actual", "query": 'sum by (pod) (sum by (pod, status) ( sum(rate(istio_requests_total{destination_canonical_service=~"ahp-soe-app-.*"} [30s]))))'},
+        {"name": "average_response_time", "query": 'avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{destination_service_name=~"ahp-soe-app-.*"} [10s])) / sum by (pod) (rate(istio_request_duration_milliseconds_count{destination_service_name=~"ahp-soe-app-.*"} [10s])))'},
+        {"name": "latency_p99", "query": 'histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name=~"ahp-soe-app-.*"}[30s])) by (le))'},
+        {"name": "latency_p95", "query": 'histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name=~"ahp-soe-app-.*"}[30s])) by (le))'},
+        {"name": "request_rate_actual", "query": 'sum by (pod) (sum by (pod, status) ( sum(rate(istio_requests_total{destination_service_name=~"ahp-soe-app-.*"} [30s]))))'},
         {"name": "number_of_pods", "query": 'count(kube_pod_info{pod=~"ahp-soe-app-(small|medium|large).*"})'},
         {"name": "total_cpu", "query": 'sum(kube_pod_container_resource_limits{resource="cpu", pod=~"ahp-soe-app-(small|medium|large).*"})'},
         {"name": "cpu_per_limit", "query": 'sum(rate(container_cpu_usage_seconds_total{pod=~"ahp-soe-app-.*"}[1m])) / sum(kube_pod_container_resource_limits{resource="cpu", pod=~"ahp-soe-app-.*"}) * 100'},

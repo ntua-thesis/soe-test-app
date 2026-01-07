@@ -18,6 +18,7 @@ NAMESPACE = "test"
 APP_URL = "http://30200.lefto.org/primes?n=600000"
 PROMETHEUS_URL = "https://prometheus.lefto.org"
 RESULTS_DIR = "./results"
+IMAGE_TAG= "0.0.1-32bit"
 
 # Experiment Settings
 DURATION_PER_STEP = 300  # 5 minutes in seconds
@@ -71,13 +72,13 @@ RESOURCE_CONFIGS = [
 
 # Prometheus Queries to Export (Key = Filename, Value = PromQL)
 PROMETHEUS_QUERIES = {
-    "request_rate_for_30s": 'sum by (pod) (sum by (pod, status) ( sum(rate(istio_requests_total{destination_canonical_service="chart"} [30s]))))',
+    "request_rate_for_30s": 'sum by (pod) (sum by (pod, status) ( sum(rate(istio_requests_total{destination_service_name="soe-test-app-chart"} [30s]))))',
     "cpu_per_limit_for_60s": 'sum(rate(container_cpu_usage_seconds_total{pod=~"soe-test-app-chart-.*"}[1m])) / sum(kube_pod_container_resource_limits{resource="cpu", container="chart"}) * 100',
-    "art_for_10s": 'avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{destination_canonical_service="chart"} [10s])) / sum by (pod) (rate(istio_request_duration_milliseconds_count{destination_canonical_service="chart"} [10s])))',
+    "art_for_10s": 'avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{destination_service_name="soe-test-app-chart"} [10s])) / sum by (pod) (rate(istio_request_duration_milliseconds_count{destination_service_name="soe-test-app-chart"} [10s])))',
     "cpu_throttling_60s": 'avg(rate(container_cpu_cfs_throttled_periods_total{pod=~"soe-test-app.*"} [60s]))',
     "memory_per_limit": 'sum(container_memory_working_set_bytes{pod=~"soe-test-app-.*"}) / sum(kube_pod_container_resource_limits{resource="memory", container="chart"}) * 100',
-    "latency_p99": 'histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service="chart"}[30s])) by (le))',
-    "latency_p95": 'histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_canonical_service="chart"}[30s])) by (le))',
+    "latency_p99": 'histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="soe-test-app-chart"}[30s])) by (le))',
+    "latency_p95": 'histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="soe-test-app-chart"}[30s])) by (le))',
     "restarts": 'kube_pod_container_status_restarts_total{container="chart"}',
 }
 # =================================================
@@ -96,6 +97,7 @@ def run_helm_update(cpu, memory):
         "--set", f"resources.limits.memory={memory}",
         "--set", f"resources.requests.cpu={cpu}",
         "--set", f"resources.requests.memory={memory}",
+        "--set", f"image.tag={IMAGE_TAG}",
         "--wait"
     ]
     try:
