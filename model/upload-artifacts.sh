@@ -3,7 +3,7 @@
 # Configuration
 NEXUS_URL="${NEXUS_URL:-https://nexus.lefto.org}"
 REPOSITORY="${NEXUS_REPOSITORY:-ahp-autoscaler}"
-VERSION="${ARTIFACT_VERSION:-0.1.0}"
+VERSION="${ARTIFACT_VERSION:-0.1.1}"
 ARTIFACTS_DIR="${ARTIFACTS_DIR:-./results}"
 
 # Prompt for credentials if not set

@@ -52,3 +52,11 @@ docker run --rm -it \
   nexus.lefto.org/docker/load-test-runner:0.0.2 \
   python -u simulate.py
 ```
+
+```
+docker run --rm \
+  -v "$(pwd)/simulations/outputs_simulation:/app/outputs_simulation" \
+  -v "$(pwd)/create_graphs.py:/app/create_graphs.py" \
+  model-runner:0.0.2 \
+  python -u create_graphs.py
+```

@@ -31,12 +31,12 @@ def assign_optimal_resources(df):
     optimal_configs = {}
     for req_rate, group in df.groupby("request_rate_target"):
         viable = group[
-            (group["average_response_time"] < 500) &
+            (group["average_response_time"] < 400) &
             (group["latency_p99"] < 1000) &
             (group["latency_p95"] < 800) &
-            (group["success_rate"] >= 0.98) &
+            (group["success_rate"] >= 0.99) &
             # (group["throttling"] < 0.4) &       # No throttling 0.1
-            (group["ram_usage"] <= 85)          # No OOM risk
+            (group["ram_usage"] <= 70)          # No OOM risk
         ]
         if not viable.empty:
             # Sort by CPU/RAM ascending and pick the smallest viable config
