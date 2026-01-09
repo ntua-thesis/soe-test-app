@@ -6,10 +6,11 @@ TAGS=(
   "0.1.1-if-not-updated"
   "0.1.1-independent"
   "0.1.1-knn-after"
+  "0.1.1-three-to-one"
 )
 
 # Helm release name and namespace (Adjust these as needed)
-RELEASE_NAME="ahp-operator"
+RELEASE_NAME="ahp-autoscaler"
 NAMESPACE="ahp"
 
 for TAG in "${TAGS[@]}"; do
@@ -17,14 +18,13 @@ for TAG in "${TAGS[@]}"; do
   echo "Starting test run for tag: $TAG"
   echo "=================================================="
 
-  # Directory for outputs (ensure it exists)
-  mkdir -p "$(pwd)/outputs_simulation/$TAG"
-
   # 1. Update the Helm Release with the specific recommender tag
   echo "Updating Helm release..."
   helm upgrade $RELEASE_NAME /home/lefto/ahp-autoscaler/helm \
     --namespace $NAMESPACE \
     --set recommender.clientImageTag=$TAG \
+    --set recommender.serverImageTag="0.1.1" \
+    --set image.tag="0.3.0" \
     --wait
 
   # 2. Reset the Custom Resource (CR)
@@ -36,6 +36,7 @@ for TAG in "${TAGS[@]}"; do
   
   kubectl apply -f /home/lefto/ahp-autoscaler/examples/ahpdeployment.yaml
 
+  sleep 5
   # 3. Create a unique output directory for this run to avoid overwriting
   # or ensure the python script handles unique naming based on an env var.
   # Here, I'm passing the TAG as an environment variable to the container.
@@ -48,7 +49,7 @@ for TAG in "${TAGS[@]}"; do
     --name "simulation-$TAG" \
     --network host \
     -v ~/.kube/config:/root/.kube/config \
-    -v "$(pwd)/outputs_simulation/$TAG:/app/outputs_simulation" \
+    -v "$(pwd)/outputs_simulation/0.3.0-$TAG-server-0.1.1:/app/outputs_simulation" \
     -v "$(pwd)/simulate.py:/app/simulate.py" \
     -v "/home/lefto/timestamps.txt:/app/timestamps.txt" \
     nexus.lefto.org/docker/load-test-runner:0.0.2 \

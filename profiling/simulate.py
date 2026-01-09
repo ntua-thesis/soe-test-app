@@ -167,7 +167,7 @@ def simulate_requests_from_timestamps(input_timestamps_file, simulation_duration
         {"name": "throttling", "query": 'avg(rate(container_cpu_cfs_throttled_periods_total{pod=~"ahp-soe-app-.*"} [60s]))'},
         {"name": "total_memory", "query": 'sum(kube_pod_container_resource_limits{resource="memory", pod=~"ahp-soe-app-(small|medium|large).*"})'},
         {"name": "memory_per_limit", "query": 'sum(container_memory_working_set_bytes{pod=~"ahp-soe-app-.*"}) / sum(kube_pod_container_resource_limits{resource="memory", pod=~"ahp-soe-app-.*"}) * 100'},
-        {"name": "restarts", "query": 'sum(rate(kube_pod_container_status_restarts_total{container="ahp-soe-app"}[5m]))'}
+        {"name": "restarts", "query": 'sum(rate(kube_pod_container_status_restarts_total{container="ahp-soe-app"}[5m])) * 60'}
     ]
 
 

@@ -35,6 +35,9 @@ def assign_optimal_resources(df):
             (group["latency_p99"] < 1000) &
             (group["latency_p95"] < 800) &
             (group["success_rate"] >= 0.99) &
+            (group["average_run_cpu"] < 75) &
+            (np.abs(group["request_rate_actual"] - req_rate) / req_rate <= 0.05) &
+            (group["restarts"] is None or group["restarts"] == 0) &
             # (group["throttling"] < 0.4) &       # No throttling 0.1
             (group["ram_usage"] <= 70)          # No OOM risk
         ]
@@ -91,6 +94,7 @@ def create_intermediate_dataset():
         "latency_p99": "latency_p99",
         "cpu_throttling_60s": "throttling",
         "art_for_10s": "average_response_time",
+        "average_run_cpu": "average_run_cpu",
     }, inplace=True)
 
     df = assign_optimal_resources(df)

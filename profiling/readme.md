@@ -55,8 +55,18 @@ docker run --rm -it \
 
 ```
 docker run --rm \
-  -v "$(pwd)/simulations/outputs_simulation:/app/outputs_simulation" \
+  -v "$(pwd)/simulations/0.2.0-0.1.1-ahp-only:/app/outputs_simulation" \
   -v "$(pwd)/create_graphs.py:/app/create_graphs.py" \
   model-runner:0.0.2 \
   python -u create_graphs.py
+```
+
+```
+docker run --rm \
+  -v "$(pwd)/simulations/0.2.0-0.1.1-ahp-only/metrics:/app/input_ahp/metrics" \
+  -v "$(pwd)/simulations/0.2.0-0.1.1-if-not-updated/metrics:/app/input_full/metrics" \
+  -v "$(pwd)/simulations/graphs/0.2.0-0.1.1-ahp-only-vs-0.2.0-0.1.1-if-not-updated:/app/output" \
+  -v "$(pwd)/comparison_graphs.py:/app/comparison_graphs.py" \
+  model-runner:0.0.2 \
+  python -u comparison_graphs.py
 ```

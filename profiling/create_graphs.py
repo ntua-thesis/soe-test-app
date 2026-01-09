@@ -22,6 +22,9 @@ if len(sys.argv) > 1:
 directory = Path(graph_path)
 directory.mkdir(parents=True, exist_ok=True)
 
+# List to hold stats strings for writing to file later
+all_stats_output = []
+
 def calculate_stats_from_csv(filename):
     """
     Reads a CSV file, calculates the average and maximum of the 'Value' column,
@@ -37,14 +40,13 @@ def calculate_stats_from_csv(filename):
     try:
         # Read the CSV file into a pandas DataFrame
         df = pd.read_csv(filename)
-        
         # Check if the 'Value' column exists in the DataFrame
         if 'Value' in df.columns:
             # Calculate the mean (average) and max of the 'Value' column
             average_value = df['Value'].mean()
             max_value = df['Value'].max()
-            sum = df['Value'].sum()
-            return {'average_value': average_value, 'max_value': max_value, 'sum': sum}
+            total_sum = df['Value'].sum()
+            return {'average_value': average_value, 'max_value': max_value, 'sum': total_sum}
         else:
             print(f"Error: 'Value' column not found in the file '{filename}'.")
             return None
@@ -64,55 +66,70 @@ for filename in os.listdir(csv_path):
 
         # Calculate and print both average and max values
         stats = calculate_stats_from_csv(filename=file_path)
+        
         if stats:
-            print(f"Stats for {filename}:")
-            print(f"  Average Value: {stats['average_value']:.4f}")
-            print(f"  Maximum Value: {stats['max_value']:.4f}")
-            print(f"  Sum Value: {stats['sum']:.4f}")
-        
+            # Format the output string
+            stats_str = (
+                f"Stats for {filename}:\n"
+                f"  Average Value: {stats['average_value']:.4f}\n"
+                f"  Maximum Value: {stats['max_value']:.4f}\n"
+                f"  Sum Value: {stats['sum']:.4f}\n"
+                f"{'-'*30}\n"
+            )
+            
+            # Print to console
+            print(stats_str)
+            
+            # Append to list for file writing
+            all_stats_output.append(stats_str)
+
         # Now, perform the plotting operations
-        df = pd.read_csv(file_path)
-        
-        # Convert timestamp from milliseconds to datetime objects
-        df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='ms')
-        df.set_index('Timestamp', inplace=True)
-        
-        # 1. Create bins of n seconds
-        # 'bin_size_seconds' defines the resampling frequency
-        binned_df = df.resample(f'{bin_size_seconds}s').mean()
-        
-        # 2. Apply a rolling mean for smoothing
-        # The 'rolling()' function with the 'smoothing_window' size calculates a moving average
-        binned_df['Smoothed_Value'] = binned_df['Value'].rolling(window=smoothing_window, min_periods=1).mean()
-        
-        # --- Plotting ---
-        plt.figure(figsize=(12, 7))
-        
-        # Plot the original binned data
-        plt.plot(binned_df.index, binned_df['Value'], linestyle='--', alpha=0.5, label='Binned Data')
-        
-        # Plot the smoothed data
-        plt.plot(binned_df.index, binned_df['Smoothed_Value'], marker='', linestyle='-', color='red', label='Smoothed Data')
-        
-        # Set title and labels
-        plt.title(f"{filename[:-4]} - Binned and Smoothed")
-        plt.xlabel('Timestamp')
-        plt.ylabel('Value')
-        
-        # Add a legend to distinguish the lines
-        plt.legend()
-        
-        # Rotate x-axis labels for better readability
-        plt.xticks(rotation=45)
-        
-        # Use tight layout to prevent labels from being cut off
-        plt.tight_layout()
-        
-        # Save the plot
-        output_filename = os.path.join(graph_path, filename[:-4] + '_smoothed.png')
-        plt.savefig(output_filename, bbox_inches='tight')
-        
-        plt.close()
+        try:
+            df = pd.read_csv(file_path)
+            # Convert timestamp from milliseconds to datetime objects
+            df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='ms')
+            df.set_index('Timestamp', inplace=True)
+            
+            # 1. Create bins of n seconds
+            binned_df = df.resample(f'{bin_size_seconds}s').mean()
+            
+            # 2. Apply a rolling mean for smoothing
+            binned_df['Smoothed_Value'] = binned_df['Value'].rolling(window=smoothing_window, min_periods=1).mean()
+            
+            # --- Plotting ---
+            plt.figure(figsize=(12, 7))
+            # Plot the original binned data
+            plt.plot(binned_df.index, binned_df['Value'], linestyle='--', alpha=0.5, label='Binned Data')
+            # Plot the smoothed data
+            plt.plot(binned_df.index, binned_df['Smoothed_Value'], marker='', linestyle='-', color='red', label='Smoothed Data')
+            
+            # Set title and labels
+            plt.title(f"{filename[:-4]} - Binned and Smoothed")
+            plt.xlabel('Timestamp')
+            plt.ylabel('Value')
+            # Add a legend to distinguish the lines
+            plt.legend()
+            # Rotate x-axis labels for better readability
+            plt.xticks(rotation=45)
+            # Use tight layout to prevent labels from being cut off
+            plt.tight_layout()
+            
+            # Save the plot
+            output_filename = os.path.join(graph_path, filename[:-4] + '_smoothed.png')
+            plt.savefig(output_filename, bbox_inches='tight')
+            plt.close()
+            
+        except Exception as e:
+            print(f"Could not generate graph for {filename}: {e}")
+
+# --- Write stats to file ---
+stats_file_path = os.path.join(graph_path, 'summary_stats.txt')
+try:
+    with open(stats_file_path, 'w') as f:
+        f.writelines(all_stats_output)
+    print(f"Statistics have been written to '{stats_file_path}'")
+except Exception as e:
+    print(f"Error writing stats file: {e}")
 
 print(f"\nBinned and smoothed graphs have been created and saved at '{graph_path}/'")
-print("All values have been processed and printed.")
+print("All values have been processed.")
