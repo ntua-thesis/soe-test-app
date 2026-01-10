@@ -1,13 +1,18 @@
 #!/bin/bash
 
+# Before running checkout both ahp-autoscaler repo and this one
+
 # List of tags to test
 TAGS=(
-  "0.1.1-ahp-only"
-  "0.1.1-if-not-updated"
-  "0.1.1-independent"
-  "0.1.1-knn-after"
-  "0.1.1-three-to-one"
+  # "0.1.1-ahp-only"
+  "0.2.0-if-not-updated"
+  # "0.1.1-independent"
+  "0.2.0-knn-after"
+  "0.2.0-three-to-one"
 )
+
+SERVER_TAG="0.1.2"
+OPERATOR_TAG="0.3.0"
 
 # Helm release name and namespace (Adjust these as needed)
 RELEASE_NAME="ahp-autoscaler"
@@ -18,13 +23,15 @@ for TAG in "${TAGS[@]}"; do
   echo "Starting test run for tag: $TAG"
   echo "=================================================="
 
+  SIMULATION_DESCRIPTION="$OPERATOR_TAG-$TAG-server-$SERVER_TAG"
+
   # 1. Update the Helm Release with the specific recommender tag
   echo "Updating Helm release..."
   helm upgrade $RELEASE_NAME /home/lefto/ahp-autoscaler/helm \
     --namespace $NAMESPACE \
-    --set recommender.clientImageTag=$TAG \
-    --set recommender.serverImageTag="0.1.1" \
-    --set image.tag="0.3.0" \
+    --set recommender.clientImageTag="$TAG" \
+    --set recommender.serverImageTag="$SERVER_TAG" \
+    --set image.tag="$OPERATOR_TAG" \
     --wait
 
   # 2. Reset the Custom Resource (CR)
@@ -46,10 +53,10 @@ for TAG in "${TAGS[@]}"; do
   # Run the simulation synchronously (removed -d) so the script waits for it to finish.
   # If you need it detached, we have to add a wait logic.
   docker run \
-    --name "simulation-$TAG" \
+    --name "simulation-$SIMULATION_DESCRIPTION" \
     --network host \
     -v ~/.kube/config:/root/.kube/config \
-    -v "$(pwd)/outputs_simulation/0.3.0-$TAG-server-0.1.1:/app/outputs_simulation" \
+    -v "$(pwd)/outputs_simulation/$SIMULATION_DESCRIPTION:/app/outputs_simulation" \
     -v "$(pwd)/simulate.py:/app/simulate.py" \
     -v "/home/lefto/timestamps.txt:/app/timestamps.txt" \
     nexus.lefto.org/docker/load-test-runner:0.0.2 \

@@ -116,6 +116,7 @@ def load_data_from_directories(base_dir):
             run_df = pd.concat(dfs_for_this_run, axis=1)
             
             run_df['average_run_cpu'] = run_df['cpu_per_limit_for_60s'].mean()
+            run_df['max_run_cpu'] = run_df['cpu_per_limit_for_60s'].max()
             run_df['cpu'] = cpu_conf.replace("m", "")
             run_df['memory'] = int(mem_conf.replace("Gi", "").replace("Mi", "")) * (1024 if "Gi" in mem_conf else 1)
             run_df['target_rps'] = rps_val
