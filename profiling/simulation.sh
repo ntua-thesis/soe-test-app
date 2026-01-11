@@ -2,13 +2,17 @@
 
 # Before running checkout both ahp-autoscaler repo and this one
 
-# List of tags to test
-TAGS=(
-  # "0.1.1-ahp-only"
-  "0.2.1-if-not-updated"
-  # "0.1.1-independent"
-  # "0.2.0-knn-after"
-  "0.2.1-three-to-one"
+# Associative array: [TAG]="FILENAME"
+# Ensure you are using Bash 4.0+
+declare -A TAGS_CONFIG=(
+  # ["0.1.1-ahp-only"]="ahpdeployment.yaml"
+  # ["0.2.1-if-not-updated"]="ahpdeployment.yaml"
+  # ["0.1.1-independent"]="ahpdeployment-independent.yaml"
+  # ["0.2.0-knn-after"]="ahpdeployment-knn.yaml"
+  ["0.2.1-three-to-one"]="ahpdeployment_one_max.yaml"
+  ["0.2.1-if-not-updated"]="ahpdeployment.yaml"
+  ["0.2.1-three-to-one"]="ahpdeployment.yaml"
+  ["0.2.1-if-not-updated"]="ahpdeployment_one_max.yaml"
 )
 
 SERVER_TAG="0.2.0"
@@ -17,10 +21,15 @@ OPERATOR_TAG="0.3.0"
 # Helm release name and namespace (Adjust these as needed)
 RELEASE_NAME="ahp-autoscaler"
 NAMESPACE="ahp"
+EXAMPLES_PATH="/home/lefto/ahp-autoscaler/examples"
 
-for TAG in "${TAGS[@]}"; do
+# Iterate over the keys (the tags)
+for TAG in "${!TAGS_CONFIG[@]}"; do
+  CR_FILENAME="${TAGS_CONFIG[$TAG]}"
+  
   echo "=================================================="
   echo "Starting test run for tag: $TAG"
+  echo "Using Custom Resource file: $CR_FILENAME"
   echo "=================================================="
 
   SIMULATION_DESCRIPTION="$OPERATOR_TAG-$TAG-server-$SERVER_TAG"
@@ -35,15 +44,16 @@ for TAG in "${TAGS[@]}"; do
     --wait
 
   # 2. Reset the Custom Resource (CR)
-  echo "Resetting Custom Resource (ahpd.yaml)..."
-  kubectl delete -f /home/lefto/ahp-autoscaler/examples/ahpdeployment.yaml --ignore-not-found=true
+  echo "Resetting Custom Resource ($CR_FILENAME)..."
+  kubectl delete -f "$EXAMPLES_PATH/$CR_FILENAME" --ignore-not-found=true
   
   # Optional: Wait briefly to ensure controller cleans up old resources
   sleep 5
   
-  kubectl apply -f /home/lefto/ahp-autoscaler/examples/ahpdeployment.yaml
+  kubectl apply -f "$EXAMPLES_PATH/$CR_FILENAME"
 
   sleep 5
+  
   # 3. Create a unique output directory for this run to avoid overwriting
   # or ensure the python script handles unique naming based on an env var.
   # Here, I'm passing the TAG as an environment variable to the container.
@@ -56,7 +66,7 @@ for TAG in "${TAGS[@]}"; do
     --name "simulation-$SIMULATION_DESCRIPTION" \
     --network host \
     -v ~/.kube/config:/root/.kube/config \
-    -v "$(pwd)/outputs_simulation/$SIMULATION_DESCRIPTION:/app/outputs_simulation" \
+    -v "$(pwd)/outputs_simulation/$SIMULATION_DESCRIPTION-$CR_FILENAME:/app/outputs_simulation" \
     -v "$(pwd)/simulate.py:/app/simulate.py" \
     -v "/home/lefto/timestamps.txt:/app/timestamps.txt" \
     nexus.lefto.org/docker/load-test-runner:0.0.2 \
