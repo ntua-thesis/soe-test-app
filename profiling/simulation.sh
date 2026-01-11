@@ -5,13 +5,13 @@
 # List of tags to test
 TAGS=(
   # "0.1.1-ahp-only"
-  "0.2.0-if-not-updated"
+  "0.2.1-if-not-updated"
   # "0.1.1-independent"
-  "0.2.0-knn-after"
-  "0.2.0-three-to-one"
+  # "0.2.0-knn-after"
+  "0.2.1-three-to-one"
 )
 
-SERVER_TAG="0.1.2"
+SERVER_TAG="0.2.0"
 OPERATOR_TAG="0.3.0"
 
 # Helm release name and namespace (Adjust these as needed)

@@ -9,7 +9,7 @@ from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.impute import SimpleImputer
 
 # Add some flags/arguments
@@ -184,46 +184,47 @@ def knn():
     joblib.dump(best_knn, f"{ML_OUTPUTS_DIR}/knn_regressor.pkl")  # Save for later use
 
 def evaluate_knn():
-    # Load preprocessed data
+    # 1. Load preprocessed data
     data = np.load(f"{ML_OUTPUTS_DIR}/preprocessed_data.npz")
     X_test, y_test = data["X_test"], data["y_test"]
 
-    # Load knn model
-    # Load the model
-    model = joblib.load(f"{ML_OUTPUTS_DIR}/knn_regressor.pkl")
+    # 2. Load the model
+    # Note: Ensure your saved model was actually a KNeighborsClassifier
+    model = joblib.load(f"{ML_OUTPUTS_DIR}/knn_regressor.pkl") 
 
-    # Transform test data with the same imputer
+    # 3. Handle Imputation (Ideally, load the imputer fitted on Train data)
+    # For now, using a fresh one as per your original logic, but be aware of data leakage
     imputer = SimpleImputer(strategy='constant', fill_value=0)
     X_test = imputer.fit_transform(X_test)
-    X_test = imputer.transform(X_test)
-    
-    # Predict on test data
+
+    # 4. Predict
     y_pred = model.predict(X_test)
+    
+    # --- CRITICAL FIX FOR CLASSIFICATION ---
+    # If your model outputs floats (e.g. 200.0), cast to int/string to compare classes
+    y_pred = y_pred.astype(int) 
+    y_test = y_test.astype(int)
 
-    # Calculate RMSE (Root Mean Squared Error)
-    rmse_cpu = mean_squared_error(y_test[:, 0], y_pred[:, 0])
-    rmse_ram = mean_squared_error(y_test[:, 1], y_pred[:, 1])
+    # 5. Calculate "Exact Match" Accuracy
+    # A prediction is only correct if BOTH CPU and RAM match the target
+    exact_matches = np.all(y_pred == y_test, axis=1)
+    exact_accuracy = np.mean(exact_matches)
 
-    print(f"RMSE for CPU: {rmse_cpu:.2f} millicores")
-    print(f"RMSE for RAM: {rmse_ram:.2f} MiB")
+    print(f"=== Model Performance ===")
+    print(f"Exact Configuration Match: {exact_accuracy:.2%} (The metric that matters most)")
 
-    # R² Score (closer to 1 is better)
-    r2_cpu = r2_score(y_test[:, 0], y_pred[:, 0])
-    r2_ram = r2_score(y_test[:, 1], y_pred[:, 1])
+    # 6. Calculate Individual Accuracy
+    cpu_acc = accuracy_score(y_test[:, 0], y_pred[:, 0])
+    ram_acc = accuracy_score(y_test[:, 1], y_pred[:, 1])
 
-    print(f"R² for CPU: {r2_cpu:.3f}")
-    print(f"R² for RAM: {r2_ram:.3f}")
+    print(f"CPU Prediction Accuracy:   {cpu_acc:.2%}")
+    print(f"RAM Prediction Accuracy:   {ram_acc:.2%}")
 
-    mae_cpu = mean_absolute_error(y_test[:, 0], y_pred[:, 0])
-    mae_ram = mean_absolute_error(y_test[:, 1], y_pred[:, 1])
-    print(f"MAE (CPU): {mae_cpu:.2f} millicores")
-    print(f"MAE (RAM): {mae_ram:.2f} MiB")
-
-    relative_error_cpu = 100 * (y_pred[:, 0] - y_test[:, 0]) / y_test[:, 0]
-    relative_error_ram = 100 * (y_pred[:, 1] - y_test[:, 1]) / y_test[:, 1]
-
-    print(f"Mean Relative Error (CPU): {np.mean(np.abs(relative_error_cpu)):.2f}%")
-    print(f"Mean Relative Error (RAM): {np.mean(np.abs(relative_error_ram)):.2f}%")
+    # 7. Detailed Classification Report (Optional but recommended)
+    # This shows if you are failing specifically on "Large" or "Small" configs
+    print("\n--- CPU Classification Report ---")
+    # Convert to string so they are treated as labels, not continuous numbers
+    print(classification_report(y_test[:, 0].astype(str), y_pred[:, 0].astype(str)))
 
 if __name__ == "__main__":
     if CREATE_INTERMEDIATE_DATASET:
