@@ -2,7 +2,7 @@
 
 # Before running checkout both ahp-autoscaler repo and this one
 
-TAGS_CONFIG=(
+TAG_CONFIGS=(
   # ["0.1.1-ahp-only"]="ahpdeployment.yaml"
   # ["0.2.1-if-not-updated"]="ahpdeployment.yaml"
   # ["0.1.1-independent"]="ahpdeployment-independent.yaml"
