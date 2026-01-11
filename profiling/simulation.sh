@@ -52,7 +52,7 @@ for TAG in "${TAGS[@]}"; do
   
   # Run the simulation synchronously (removed -d) so the script waits for it to finish.
   # If you need it detached, we have to add a wait logic.
-  docker run \
+  docker run --rm \
     --name "simulation-$SIMULATION_DESCRIPTION" \
     --network host \
     -v ~/.kube/config:/root/.kube/config \
