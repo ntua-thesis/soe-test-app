@@ -2,17 +2,15 @@
 
 # Before running checkout both ahp-autoscaler repo and this one
 
-# Associative array: [TAG]="FILENAME"
-# Ensure you are using Bash 4.0+
-declare -A TAGS_CONFIG=(
+TAGS_CONFIG=(
   # ["0.1.1-ahp-only"]="ahpdeployment.yaml"
   # ["0.2.1-if-not-updated"]="ahpdeployment.yaml"
   # ["0.1.1-independent"]="ahpdeployment-independent.yaml"
   # ["0.2.0-knn-after"]="ahpdeployment-knn.yaml"
-  ["0.2.1-three-to-one"]="ahpdeployment_one_max.yaml"
-  ["0.2.1-if-not-updated"]="ahpdeployment.yaml"
-  ["0.2.1-three-to-one"]="ahpdeployment.yaml"
-  ["0.2.1-if-not-updated"]="ahpdeployment_one_max.yaml"
+  "0.2.1-three-to-one:ahpdeployment_one_max.yaml"
+  "0.2.1-if-not-updated:ahpdeployment.yaml"
+  "0.2.1-three-to-one:ahpdeployment.yaml"
+  "0.2.1-if-not-updated:ahpdeployment_one_max.yaml"
 )
 
 SERVER_TAG="0.2.0"
@@ -24,8 +22,9 @@ NAMESPACE="ahp"
 EXAMPLES_PATH="/home/lefto/ahp-autoscaler/examples"
 
 # Iterate over the keys (the tags)
-for TAG in "${!TAGS_CONFIG[@]}"; do
-  CR_FILENAME="${TAGS_CONFIG[$TAG]}"
+for CONFIG in "${TAG_CONFIGS[@]}"; do
+  TAG="${CONFIG%%:*}"      # Everything before the colon
+  CR_FILENAME="${CONFIG#*:}" # Everything after the colon
   
   echo "=================================================="
   echo "Starting test run for tag: $TAG"
